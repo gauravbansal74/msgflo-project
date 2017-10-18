@@ -1,0 +1,28 @@
+language: node_js
+dist: trusty
+sudo: false
+node_js:
+- '6'
+services:
+- docker
+before_install:
+- cp examples/components/* components/
+- cp examples/spec/* spec/
+- if [ "$TARGET" == "raspberrypi3" ]; then docker run --rm --privileged multiarch/qemu-user-static:register --reset; fi
+before_script:
+- docker -v
+- docker-compose -v
+- docker-compose up -d
+- docker-compose ps
+- until ./node_modules/.bin/fbp-protocol-healthcheck ws://127.0.0.1:3569 || (( count++ >= 10 )); do echo "Waiting for runtime to be ready"; sleep 10; done
+after_success:
+- if [ "$TRAVIS_BRANCH" == "master" ]; then docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; docker push "$DOCKER_IMAGE"; fi
+matrix:
+  include:
+  - env: TARGET=x86 DOCKER_IMAGE=msgflo/msgflo-project DOCKER_FILE=Dockerfile
+  - env: TARGET=raspberrypi3 DOCKER_IMAGE=msgflo/raspberrypi3-msgflo-project COMPOSE_FILE=docker-compose-raspberrypi3.yml DOCKER_FILE=Dockerfile-raspberrypi3
+    sudo: true
+env:
+  global:
+  - secure: miJtGDRtmBlS6QEaV/mjG2idVZpEyvLbm9mHYwWRZ8vo9T7PL8/GMCGRFvn0/atUL2fIMlVAl2LbB0Eiz1kO2X+dDs+a8aJKjDNUhn/Rh07e21Yn4XBnxMsxBORPWh5A3p4Rmu2XpMK3K4WH6LSbcuSNnn0AhDta+5IoEaWZV3dNFfoDAUcCT6Gxf/hoC9uW4Ia4yqPCRYcfOgPo9UHNCP+CVb7W93vyeyxUXpXs5+9fNYqSw5KThpA0ZdK59Irj7NOzHwDVZt48/2I+gTQoSvR7sZKiv+WC5joRrDPtEc7BErMm7dV/cfu2GHeyliN0qAfJM396m3ohDURIE1owpPiGVqo8EzJ15i+xD44e6agBAx87Qp5lcHeWNC++naF01xIMnr6BHeI3vMuw9qmFSJ/cf6rk6fUQvA/y1t/0lPMVmOj1aleuRihvVS+tRg3Lq9mbQ0hZlDjgxab/1YFo7EThiFIsFBFTK/FH8tqnAerJzI5cthNU9JSTi/mLBRVdsUgNb6st/8sJeuBcn9qnDly58BEU0U4bamvngGQXjFPaOhNGTfAFUBegGJsEbHVLjILx9HnEs/EHbO1r0I36P36jx83lLMF9dgfR0yxnKMUtNvKqwVHoolNHOGbT51fpSk/5XwsmI08Xk2fW+O2vMsxCkvMlzy0fU9RlB8LqDjc=
+  - secure: G3Q6YY/caQgqIY1lNJSpiyNZdIWN6QyfWFwxLbrM5HQnzMXJhIFHWLSq7WkPq5olGv8sMJ+cAOKh9SLlLKIQmuDvc4dmaAhIQc7p4olgPXGo/Tsd+k+LoDLwqINoKsdQeH99l514zLgOHRg7y5zLpSYbrsrnQhfoMMJ1unQ6zvTIb6dCkXOygB1CF+tTs0bpOGoXr6ALDLA1xJsOeh+aHHKmOPcJlfZyNA3arpRTetXBfsbSKzfBLX8HeYiJjZA9k1qOinHvYkP0vuix3KyoW568c4da0ccoCXa6elESQt4fHi68Y5Qt1l7MXgfhGh+7Ojn6l4muMBIONU0eq3xn+S3lqln6yL/4yJXvpPyZinIi17bhl3zwltHLFIsxXuN5UlVGKzE2ym/ynxlpwOM0DMX4mIz0bP6ACk3RunsMy6T+lXAOIPINFfNF2qMfmR2K9cn7/BDnceWvFvRDbhrY7lF+4foYI8fXlolQ1xT3CqB3OUB0WW/qCO82k7pi5hUKYiXcD318UGS85qlmKKei15n67L8ZcWpGS/oQdhmEzgbFK7GRWJ5ZLf2P5vVN96SRYLbnbcoQvzeJw8KohC3yGPwoCLUXpnjbL520t4rXxX5jCNM8CxjJRImC4wUdI/In4U0Z6iA0pkWoGveCKEumCjuvoHcYwJyl5ZfcNkOkknY=
