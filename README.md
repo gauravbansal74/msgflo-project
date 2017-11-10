@@ -45,7 +45,6 @@ You should see an empty graph. Click _Edit as project_ to start hacking!
 Use Flowhub's [GitHub synchronization](https://docs.flowhub.io/github-integration/) feature to push your graph and component changes to your repository.
 
 ## Test automation
-
 * Enable your local fork in [Travis CI](https://travis-ci.org/)
 * Tests are written in [fbp-spec format](https://github.com/flowbased/fbp-spec) and located in `spec/` folder
 * You can run tests locally with `npm test` (note: you'll have to do `npm install` for this even when running with Docker)
